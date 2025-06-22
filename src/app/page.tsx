@@ -42,6 +42,7 @@ export default function Home() {
   const [extractedData, setExtractedData] =
     useState<ExtractMessageDetailsOutput | null>(null);
   const [generatedReply, setGeneratedReply] = useState('');
+  const [updatedBy, setUpdatedBy] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -108,11 +109,11 @@ export default function Home() {
   };
   
   const handleExportToSheets = async () => {
-    if (!extractedData || !generatedReply) {
+    if (!extractedData || !generatedReply || !updatedBy.trim()) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'No data available to export.',
+        description: 'Please provide a name in the "Updated By" field before exporting.',
       });
       return;
     }
@@ -122,6 +123,7 @@ export default function Home() {
       const exportData = {
         ...extractedData,
         replyMessage: generatedReply,
+        updatedBy: updatedBy,
       };
       const result = await exportToSheets(exportData);
 
@@ -311,7 +313,7 @@ export default function Home() {
                         Review, edit, and copy the AI-generated reply.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                         {isGenerating ? (
                             <div className="space-y-2">
                                 <Skeleton className="h-4 w-full" />
@@ -319,13 +321,27 @@ export default function Home() {
                                 <Skeleton className="h-4 w-3/4" />
                             </div>
                         ) : (
-                            <Textarea
-                                value={generatedReply}
-                                onChange={(e) => setGeneratedReply(e.target.value)}
-                                rows={6}
-                                placeholder="Generated reply will appear here..."
-                                className="resize-none"
-                            />
+                            <>
+                              <Textarea
+                                  value={generatedReply}
+                                  onChange={(e) => setGeneratedReply(e.target.value)}
+                                  rows={6}
+                                  placeholder="Generated reply will appear here..."
+                                  className="resize-none"
+                              />
+                              <div className="space-y-2">
+                                <Label htmlFor="updatedBy" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Updated By</Label>
+                                <Input
+                                  id="updatedBy"
+                                  value={updatedBy}
+                                  onChange={(e) =>
+                                    setUpdatedBy(e.target.value)
+                                  }
+                                  placeholder="Your Name"
+                                  disabled={isExporting}
+                                />
+                              </div>
+                            </>
                         )}
                     </CardContent>
                     <CardFooter className="justify-between">
@@ -339,7 +355,7 @@ export default function Home() {
                         </Button>
                         <Button 
                             onClick={handleExportToSheets} 
-                            disabled={!generatedReply || isGenerating || isExporting}
+                            disabled={!generatedReply || isGenerating || isExporting || !updatedBy.trim()}
                         >
                             {isExporting ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

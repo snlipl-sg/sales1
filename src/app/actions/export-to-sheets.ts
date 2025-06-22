@@ -5,6 +5,7 @@ import type { ExtractMessageDetailsOutput } from '@/ai/flows/extract-message-det
 
 interface ExportData extends ExtractMessageDetailsOutput {
   replyMessage: string;
+  updatedBy: string;
 }
 
 export async function exportToSheets(data: ExportData) {
@@ -35,6 +36,7 @@ export async function exportToSheets(data: ExportData) {
 
     const newRow = [
       new Date().toISOString(),
+      data.updatedBy,
       data.clientName,
       data.phoneNumber,
       data.query,
