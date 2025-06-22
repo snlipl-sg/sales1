@@ -12,7 +12,7 @@ interface ExportData extends ExtractMessageDetailsOutput {
 export async function exportToSheets(data: ExportData) {
   try {
     const client_email = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-    const private_key = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const private_key = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
     const sheet_id = process.env.GOOGLE_SHEET_ID;
     const sheet_name = process.env.GOOGLE_SHEET_NAME;
 
