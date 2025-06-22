@@ -16,10 +16,17 @@ export async function exportToSheets(data: ExportData) {
     const sheet_id = process.env.GOOGLE_SHEET_ID;
     const sheet_name = process.env.GOOGLE_SHEET_NAME;
 
-    if (!client_email || !private_key || !sheet_id || !sheet_name) {
-      throw new Error(
-        'Google Sheets API environment variables are not configured.'
-      );
+    if (!client_email) {
+      throw new Error('GOOGLE_SHEETS_CLIENT_EMAIL is not configured.');
+    }
+    if (!private_key) {
+      throw new Error('GOOGLE_SHEETS_PRIVATE_KEY is not configured.');
+    }
+    if (!sheet_id) {
+      throw new Error('GOOGLE_SHEET_ID is not configured.');
+    }
+    if (!sheet_name) {
+      throw new Error('GOOGLE_SHEET_NAME is not configured.');
     }
 
     const auth = new google.auth.GoogleAuth({

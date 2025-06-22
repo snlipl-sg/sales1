@@ -69,11 +69,9 @@ export default function Home() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [showIssue, setShowIssue] = useState(true);
+  const [showIssue, setShowIssue] = useState(false);
   const { toast } = useToast();
-  const [exportError, setExportError] = useState<string | null>(
-    'Failed to export to Google Sheets. GOOGLE_SHEET_ID is not configured.'
-  );
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const handleExtract = async () => {
     if (!message.trim()) {
@@ -88,6 +86,7 @@ export default function Home() {
     setExtractedData(null);
     setGeneratedReply('');
     setExportError(null);
+    setShowIssue(false);
     try {
       const result = await extractMessageDetails({ message });
       setExtractedData(result);
@@ -113,6 +112,7 @@ export default function Home() {
     setIsGenerating(true);
     setGeneratedReply('');
     setExportError(null);
+    setShowIssue(false);
     try {
       const result = await generateReplyMessage({
         clientName: extractedData.clientName || 'Valued Customer',
@@ -138,6 +138,7 @@ export default function Home() {
   
   const handleExportToSheets = async () => {
     setExportError(null);
+    setShowIssue(false);
     if (!extractedData || !generatedReply || !updatedBy.trim()) {
       toast({
         variant: 'destructive',
@@ -180,6 +181,7 @@ export default function Home() {
     value: string
   ) => {
     setExportError(null);
+    setShowIssue(false);
     if (extractedData) {
       setExtractedData({ ...extractedData, [field]: value });
     }
@@ -228,6 +230,7 @@ export default function Home() {
               onChange={(e) => {
                 setMessage(e.target.value)
                 setExportError(null)
+                setShowIssue(false)
               }}
               className="resize-none"
             />
@@ -323,6 +326,7 @@ export default function Home() {
                     <Select value={source} onValueChange={(value) => {
                         setSource(value);
                         setExportError(null);
+                        setShowIssue(false);
                     }}>
                       <SelectTrigger id="source">
                         <SelectValue placeholder="Select a source" />
@@ -387,6 +391,7 @@ export default function Home() {
                                   onChange={(e) => {
                                     setGeneratedReply(e.target.value)
                                     setExportError(null)
+                                    setShowIssue(false)
                                   }}
                                   rows={6}
                                   placeholder="Generated reply will appear here..."
@@ -400,6 +405,7 @@ export default function Home() {
                                   onChange={(e) => {
                                     setUpdatedBy(e.target.value)
                                     setExportError(null)
+                                    setShowIssue(false)
                                   }}
                                   placeholder="Your Name"
                                   disabled={isExporting}
