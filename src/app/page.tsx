@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -44,14 +45,24 @@ export default function Home() {
     '[22/06/25, 10:42:55 AM] Suchanshu: Hi Sudhanshu, How are you doing?\nI have a potential buyer for one of your dehydrated Fruits/vegetables machine.\n[22/06/25, 10:42:55 AM] Suchanshu: Can you share details about the machine?\n[22/06/25, 10:42:58 AM] Suchanshu: I will scope it out'
   );
   const [extractedData, setExtractedData] =
-    useState<ExtractMessageDetailsOutput | null>(null);
-  const [generatedReply, setGeneratedReply] = useState('');
-  const [updatedBy, setUpdatedBy] = useState('');
+    useState<ExtractMessageDetailsOutput | null>({
+        clientName: 'Aakash',
+        phoneNumber: '',
+        query: 'A potential buyer is interested in the dehydrated fruits/vegetables machine and is requesting details about the machine.',
+        messageDetails: '[22/06/25, 10:42:55 AM] Suchanshu: Hi Sudhanshu, How are you doing?\nI have a potential buyer for one of your dehydrated Fruits/vegetables machine.\n[22/06/25, 10:42:55 AM] Suchanshu: Can you share details about the machine?\n[22/06/25, 10:42:58 AM] Suchanshu: I will scope it out',
+    });
+  const [generatedReply, setGeneratedReply] = useState(
+    "Dear Ankush, Thank you for your message. Duly noted. Sudhanshu, is this still available as the dehydrated Fruits/Vegetables machine. Please provide the details to verify if it suits requirements of the new buyer. If it is available, please advise what is the best deal we can offer for Sudhanshu's reference. We look forward to hearing from you and a closing a further"
+  );
+  const [updatedBy, setUpdatedBy] = useState('Sudhanshu');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [showIssue, setShowIssue] = useState(false);
+  const [showIssue, setShowIssue] = useState(true);
   const { toast } = useToast();
+  const [exportError, setExportError] = useState<string | null>(
+    'Failed to export to Google Sheets. GOOGLE_SHEET_ID is not configured.'
+  );
 
   const handleExtract = async () => {
     if (!message.trim()) {
@@ -65,6 +76,7 @@ export default function Home() {
     setIsExtracting(true);
     setExtractedData(null);
     setGeneratedReply('');
+    setExportError(null);
     try {
       const result = await extractMessageDetails({ message });
       setExtractedData(result);
@@ -89,6 +101,7 @@ export default function Home() {
     if (!extractedData) return;
     setIsGenerating(true);
     setGeneratedReply('');
+    setExportError(null);
     try {
       const result = await generateReplyMessage({
         clientName: extractedData.clientName || 'Valued Customer',
@@ -113,6 +126,7 @@ export default function Home() {
   };
   
   const handleExportToSheets = async () => {
+    setExportError(null);
     if (!extractedData || !generatedReply || !updatedBy.trim()) {
       toast({
         variant: 'destructive',
@@ -141,11 +155,9 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Export failed:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Export Failed',
-        description: error instanceof Error ? error.message : 'An unknown error occurred. Make sure your environment variables are set up correctly.',
-      });
+      const message = error instanceof Error ? error.message : 'An unknown error occurred. Make sure your environment variables are set up correctly.';
+      setExportError(message);
+      setShowIssue(true);
     } finally {
       setIsExporting(false);
     }
@@ -155,6 +167,7 @@ export default function Home() {
     field: keyof ExtractMessageDetailsOutput,
     value: string
   ) => {
+    setExportError(null);
     if (extractedData) {
       setExtractedData({ ...extractedData, [field]: value });
     }
@@ -200,7 +213,10 @@ export default function Home() {
               placeholder="e.g., Hi, this is John Doe from Acme Corp. My number is 555-123-4567. I'd like to inquire about your pricing for the enterprise plan."
               rows={8}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value)
+                setExportError(null)
+              }}
               className="resize-none"
             />
           </CardContent>
@@ -260,14 +276,24 @@ export default function Home() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="clientName" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Client Name</Label>
-                    <Input
-                      id="clientName"
-                      value={extractedData.clientName}
-                      onChange={(e) =>
-                        handleDataChange('clientName', e.target.value)
-                      }
-                      placeholder="e.g., John Doe"
-                    />
+                    <Popover open={!!exportError}>
+                      <PopoverTrigger asChild>
+                        <Input
+                          id="clientName"
+                          value={extractedData.clientName}
+                          onChange={(e) =>
+                            handleDataChange('clientName', e.target.value)
+                          }
+                          placeholder="e.g., John Doe"
+                        />
+                      </PopoverTrigger>
+                      <PopoverContent side="right" align="start" className="bg-destructive text-destructive-foreground border-none shadow-lg w-auto p-4">
+                        <div className="flex flex-col gap-1">
+                          <p className="font-semibold">Export Failed</p>
+                          <p className="text-sm text-destructive-foreground/90">{exportError}</p>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber" className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" />Phone Number</Label>
@@ -328,7 +354,10 @@ export default function Home() {
                             <>
                               <Textarea
                                   value={generatedReply}
-                                  onChange={(e) => setGeneratedReply(e.target.value)}
+                                  onChange={(e) => {
+                                    setGeneratedReply(e.target.value)
+                                    setExportError(null)
+                                  }}
                                   rows={6}
                                   placeholder="Generated reply will appear here..."
                                   className="resize-none"
@@ -338,9 +367,10 @@ export default function Home() {
                                 <Input
                                   id="updatedBy"
                                   value={updatedBy}
-                                  onChange={(e) =>
+                                  onChange={(e) => {
                                     setUpdatedBy(e.target.value)
-                                  }
+                                    setExportError(null)
+                                  }}
                                   placeholder="Your Name"
                                   disabled={isExporting}
                                 />
@@ -392,8 +422,9 @@ export default function Home() {
         <div className="fixed bottom-4 left-4 z-50">
           <Popover open={showIssue} onOpenChange={setShowIssue}>
             <PopoverTrigger asChild>
-              <button className="flex h-8 w-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg animate-in fade-in-0 slide-in-from-bottom-10 duration-500">
-                  <span className="font-bold">N</span>
+              <button className="flex items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg animate-in fade-in-0 slide-in-from-bottom-10 duration-500 px-3 py-1.5 text-sm font-medium">
+                <div className="w-2 h-2 bg-white/80 rounded-full mr-2" />
+                <span>1 Issue</span>
               </button>
             </PopoverTrigger>
             <PopoverContent side="top" align="start" className="w-auto p-2 mb-2">
@@ -412,3 +443,4 @@ export default function Home() {
     </main>
   );
 }
+
