@@ -73,6 +73,7 @@ export default function Home() {
   const [showIssue, setShowIssue] = useState(false);
   const { toast } = useToast();
   const [exportError, setExportError] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const handleExtract = async () => {
     if (!message.trim()) {
@@ -87,6 +88,7 @@ export default function Home() {
     setExtractedData(null);
     setGeneratedReply('');
     setExportError(null);
+    setAiError(null);
     setShowIssue(false);
     try {
       const result = await extractMessageDetails({ message });
@@ -97,11 +99,17 @@ export default function Home() {
       });
     } catch (error) {
       console.error('Extraction failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      let displayMessage = 'The AI could not process the message. Please try again.';
+      if (errorMessage.toLowerCase().includes('api key')) {
+        displayMessage = 'Your Gemini API key is missing or invalid. Please check your .env configuration.';
+      }
+      setAiError(displayMessage);
       setShowIssue(true);
       toast({
         variant: 'destructive',
         title: 'Extraction Failed',
-        description: 'The AI could not process the message. Please try again.',
+        description: displayMessage,
       });
     } finally {
       setIsExtracting(false);
@@ -113,6 +121,7 @@ export default function Home() {
     setIsGenerating(true);
     setGeneratedReply('');
     setExportError(null);
+    setAiError(null);
     setShowIssue(false);
     try {
       const result = await generateReplyMessage({
@@ -126,11 +135,17 @@ export default function Home() {
       });
     } catch (error) {
       console.error('Generation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      let displayMessage = 'The AI could not generate a reply. Please try again.';
+      if (errorMessage.toLowerCase().includes('api key')) {
+        displayMessage = 'Your Gemini API key is missing or invalid. Please check your .env configuration.';
+      }
+      setAiError(displayMessage);
       setShowIssue(true);
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
-        description: 'The AI could not generate a reply. Please try again.',
+        description: displayMessage,
       });
     } finally {
       setIsGenerating(false);
@@ -139,6 +154,7 @@ export default function Home() {
   
   const handleExportToSheets = async () => {
     setExportError(null);
+    setAiError(null);
     setShowIssue(false);
     if (!extractedData || !generatedReply || !updatedBy.trim()) {
       toast({
@@ -182,6 +198,7 @@ export default function Home() {
     value: string
   ) => {
     setExportError(null);
+    setAiError(null);
     setShowIssue(false);
     if (extractedData) {
       setExtractedData({ ...extractedData, [field]: value });
@@ -231,6 +248,7 @@ export default function Home() {
               onChange={(e) => {
                 setMessage(e.target.value)
                 setExportError(null)
+                setAiError(null)
                 setShowIssue(false)
               }}
               className="resize-none"
@@ -327,6 +345,7 @@ export default function Home() {
                     <Select value={source} onValueChange={(value) => {
                         setSource(value);
                         setExportError(null);
+                        setAiError(null);
                         setShowIssue(false);
                     }}>
                       <SelectTrigger id="source">
@@ -392,6 +411,7 @@ export default function Home() {
                                   onChange={(e) => {
                                     setGeneratedReply(e.target.value)
                                     setExportError(null)
+                                    setAiError(null)
                                     setShowIssue(false)
                                   }}
                                   rows={6}
@@ -406,6 +426,7 @@ export default function Home() {
                                   onChange={(e) => {
                                     setUpdatedBy(e.target.value)
                                     setExportError(null)
+                                    setAiError(null)
                                     setShowIssue(false)
                                   }}
                                   placeholder="Your Name"
@@ -472,7 +493,7 @@ export default function Home() {
                         <span>1</span>
                     </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">The AI failed to process your request.</p>
+                <p className="text-sm text-muted-foreground mt-1">{aiError || 'The AI failed to process your request.'}</p>
           </PopoverContent>
           </Popover>
         </div>
