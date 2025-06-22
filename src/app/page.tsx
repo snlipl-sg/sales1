@@ -36,6 +36,7 @@ import {
   Mail,
   Calendar,
   Globe,
+  Pencil,
 } from 'lucide-react';
 import {
   Popover,
@@ -290,7 +291,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="clientName" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Client Name</Label>
+                    <Label htmlFor="clientName" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Client Name <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
                     <Popover open={!!exportError}>
                       <PopoverTrigger asChild>
                         <Input
@@ -311,7 +312,7 @@ export default function Home() {
                     </Popover>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber" className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" />Phone Number</Label>
+                    <Label htmlFor="phoneNumber" className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" />Phone Number <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
                     <Input
                       id="phoneNumber"
                       value={extractedData.phoneNumber}
@@ -341,7 +342,7 @@ export default function Home() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="query" className="flex items-center gap-2"><FileText className="h-4 w-4 text-muted-foreground" />Query</Label>
+                    <Label htmlFor="query" className="flex items-center gap-2"><FileText className="h-4 w-4 text-muted-foreground" />Query <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
                     <Textarea
                       id="query"
                       value={extractedData.query}
@@ -398,7 +399,7 @@ export default function Home() {
                                   className="resize-none"
                               />
                               <div className="space-y-2">
-                                <Label htmlFor="updatedBy" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Updated By</Label>
+                                <Label htmlFor="updatedBy" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Updated By <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
                                 <Input
                                   id="updatedBy"
                                   value={updatedBy}
