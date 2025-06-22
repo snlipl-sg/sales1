@@ -34,11 +34,15 @@ const prompt = ai.definePrompt({
   output: {schema: ExtractMessageDetailsOutputSchema},
   prompt: `You are an expert at extracting information from messages.
 
-  Analyze the following message and extract the client's name, phone number, their query, and the full message details. If some information is not available, leave that field empty, but make sure the "query" and "messageDetails" fields are populated with summaries and the full message content, respectively.
-
+  Analyze the following message and extract the client's name, phone number, their query, and the full message details.
+  - The phone number can be in various formats, such as (555) 123-4567, 555-123-4567, or +15551234567. Look for any sequence of numbers that resembles a phone number.
+  - If some information is not available, leave that field as an empty string.
+  - The "query" field should be a concise summary of the client's request.
+  - The "messageDetails" field should be the full, original message content.
+  
   Message: {{{message}}}
-  \nOutput in JSON format:
-  `,
+  
+  Output in JSON format.`,
 });
 
 const extractMessageDetailsFlow = ai.defineFlow(

@@ -53,17 +53,18 @@ import {
 
 export default function Home() {
   const [message, setMessage] = useState(
-    '[22/06/25, 10:42:55 AM] Suchanshu: Hi Sudhanshu, How are you doing?\nI have a potential buyer for one of your dehydrated Fruits/vegetables machine.\n[22/06/25, 10:42:55 AM] Suchanshu: Can you share details about the machine?\n[22/06/25, 10:42:58 AM] Suchanshu: I will scope it out'
+    'Hi, this is John Doe from Acme Corp. My number is 555-123-4567. I\'d like to inquire about your pricing for the enterprise plan.'
   );
   const [extractedData, setExtractedData] =
     useState<ExtractMessageDetailsOutput | null>({
-        clientName: 'Aakash',
-        phoneNumber: '',
-        query: 'A potential buyer is interested in the dehydrated fruits/vegetables machine and is requesting details about the machine.',
-        messageDetails: '[22/06/25, 10:42:55 AM] Suchanshu: Hi Sudhanshu, How are you doing?\nI have a potential buyer for one of your dehydrated Fruits/vegetables machine.\n[22/06/25, 10:42:55 AM] Suchanshu: Can you share details about the machine?\n[22/06/25, 10:42:58 AM] Suchanshu: I will scope it out',
+      clientName: 'John Doe',
+      phoneNumber: '555-123-4567',
+      query: 'Inquiry about pricing for the enterprise plan.',
+      messageDetails:
+        'Hi, this is John Doe from Acme Corp. My number is 555-123-4567. I\'d like to inquire about your pricing for the enterprise plan.',
     });
   const [generatedReply, setGeneratedReply] = useState(
-    "Dear Ankush, Thank you for your message. Duly noted. Sudhanshu, is this still available as the dehydrated Fruits/Vegetables machine. Please provide the details to verify if it suits requirements of the new buyer. If it is available, please advise what is the best deal we can offer for Sudhanshu's reference. We look forward to hearing from you and a closing a further"
+    'Hi John, thanks for reaching out about our enterprise plan. Could you please share a bit more about your team size and specific needs so I can provide the most accurate pricing information? Looking forward to hearing from you.'
   );
   const [updatedBy, setUpdatedBy] = useState('Sudhanshu');
   const [source, setSource] = useState('whatsapp');
@@ -493,7 +494,7 @@ export default function Home() {
                         <span>1</span>
                     </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{aiError || 'The AI failed to process your request.'}</p>
+                <p className="text-sm text-muted-foreground mt-1">{aiError || exportError || 'The AI failed to process your request.'}</p>
           </PopoverContent>
           </Popover>
         </div>
