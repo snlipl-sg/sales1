@@ -39,6 +39,7 @@ import {
   Phone,
   FileText,
   MessageSquare,
+  X,
 } from 'lucide-react';
 
 const GoogleSheetsExportInfo = () => (
@@ -90,12 +91,15 @@ const GoogleSheetsExportInfo = () => (
 );
 
 export default function Home() {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(
+    '[22/06/25, 10:42:55 AM] Suchanshu: Hi Sudhanshu, How are you doing?\nI have a potential buyer for one of your dehydrated Fruits/vegetables machine.\n[22/06/25, 10:42:55 AM] Suchanshu: Can you share details about the machine?\n[22/06/25, 10:42:56 AM] Suchanshu: I will scope it out'
+  );
   const [extractedData, setExtractedData] =
     useState<ExtractMessageDetailsOutput | null>(null);
   const [generatedReply, setGeneratedReply] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showIssue, setShowIssue] = useState(false);
   const { toast } = useToast();
 
   const handleExtract = async () => {
@@ -119,6 +123,7 @@ export default function Home() {
       });
     } catch (error) {
       console.error('Extraction failed:', error);
+      setShowIssue(true);
       toast({
         variant: 'destructive',
         title: 'Extraction Failed',
@@ -145,6 +150,7 @@ export default function Home() {
       });
     } catch (error) {
       console.error('Generation failed:', error);
+      setShowIssue(true);
       toast({
         variant: 'destructive',
         title: 'Generation Failed',
@@ -376,6 +382,19 @@ export default function Home() {
            )}
         </div>
       </div>
+      {showIssue && (
+        <div className="fixed bottom-4 left-4 z-50">
+          <div className="bg-destructive text-destructive-foreground rounded-full py-1.5 px-3 flex items-center shadow-lg animate-in fade-in-0 slide-in-from-bottom-10 duration-500">
+            <div className="bg-destructive-foreground text-destructive rounded-full w-5 h-5 flex items-center justify-center font-bold text-sm mr-2">
+              N
+            </div>
+            <span className="text-sm font-medium mr-2">1 issue</span>
+            <button onClick={() => setShowIssue(false)} className="text-destructive-foreground/70 hover:text-destructive-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
