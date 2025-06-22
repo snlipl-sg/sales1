@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ExtractMessageDetailsOutput } from '@/ai/flows/extract-message-details';
 import { extractMessageDetails } from '@/ai/flows/extract-message-details';
 import { generateReplyMessage } from '@/ai/flows/generate-reply-message';
+import { exportToSheets } from '@/app/actions/export-to-sheets';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,14 +18,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -42,54 +35,6 @@ import {
   X,
 } from 'lucide-react';
 
-const GoogleSheetsExportInfo = () => (
-  <DialogContent className="sm:max-w-[625px]">
-    <DialogHeader>
-      <DialogTitle className="flex items-center gap-2">
-        <FileUp className="h-5 w-5" />
-        Exporting to Google Sheets
-      </DialogTitle>
-      <DialogDescription>
-        Follow these steps to export your data and learn about automation.
-      </DialogDescription>
-    </DialogHeader>
-    <div className="grid gap-4 py-4 text-sm">
-      <div className="space-y-2">
-        <h3 className="font-semibold">Method 1: Manual Copy & Paste</h3>
-        <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-          <li>
-            Open your Google Sheet.
-          </li>
-          <li>
-            Copy the extracted data (Client Name, Phone, Query) and the finalized reply.
-          </li>
-          <li>
-            Paste the data into the appropriate columns in your sheet.
-          </li>
-        </ol>
-      </div>
-      <div className="space-y-2">
-        <h3 className="font-semibold">Method 2: Programmatic Appending (for developers)</h3>
-        <p className="text-muted-foreground">
-          For future scalability, you can automate this process using the Google Sheets API.
-          This requires some development setup but eliminates manual data entry.
-        </p>
-        <div className="p-4 border rounded-md bg-muted/50 text-muted-foreground space-y-2">
-           <h4 className="font-medium text-foreground">High-Level Steps:</h4>
-           <ol className="list-decimal list-inside space-y-1">
-             <li><strong>Setup Google Cloud Project:</strong> Create a project in the Google Cloud Console.</li>
-             <li><strong>Enable Google Sheets API:</strong> Find and enable the Google Sheets API for your project.</li>
-             <li><strong>Create Service Account:</strong> Create a service account and download its JSON credentials file. This file securely authenticates your application.</li>
-             <li><strong>Share Sheet:</strong> Share your Google Sheet with the service account's email address, giving it "Editor" permissions.</li>
-             <li><strong>Install Google API Client:</strong> In your Next.js app, install the `googleapis` library (`npm install googleapis`).</li>
-             <li><strong>Write Append Logic:</strong> Use the credentials and the library to write a server-side function that appends data to your specified sheet and range.</li>
-           </ol>
-        </div>
-      </div>
-    </div>
-  </DialogContent>
-);
-
 export default function Home() {
   const [message, setMessage] = useState(
     '[22/06/25, 10:42:55 AM] Suchanshu: Hi Sudhanshu, How are you doing?\nI have a potential buyer for one of your dehydrated Fruits/vegetables machine.\n[22/06/25, 10:42:55 AM] Suchanshu: Can you share details about the machine?\n[22/06/25, 10:42:56 AM] Suchanshu: I will scope it out'
@@ -99,6 +44,7 @@ export default function Home() {
   const [generatedReply, setGeneratedReply] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [showIssue, setShowIssue] = useState(false);
   const { toast } = useToast();
 
@@ -158,6 +104,44 @@ export default function Home() {
       });
     } finally {
       setIsGenerating(false);
+    }
+  };
+  
+  const handleExportToSheets = async () => {
+    if (!extractedData || !generatedReply) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No data available to export.',
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const exportData = {
+        ...extractedData,
+        replyMessage: generatedReply,
+      };
+      const result = await exportToSheets(exportData);
+
+      if (result.success) {
+        toast({
+          title: 'Success',
+          description: 'Data successfully exported to Google Sheets.',
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Export Failed',
+        description: error instanceof Error ? error.message : 'An unknown error occurred. Make sure your environment variables are set up correctly.',
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -348,20 +332,22 @@ export default function Home() {
                         <Button
                             variant="outline"
                             onClick={() => copyToClipboard(generatedReply, 'Reply')}
-                            disabled={!generatedReply || isGenerating}
+                            disabled={!generatedReply || isGenerating || isExporting}
                         >
                             <Copy className="mr-2 h-4 w-4" />
                             Copy Reply
                         </Button>
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button variant="secondary">
-                                    <FileUp className="mr-2 h-4 w-4"/>
-                                    Export Guide
-                                </Button>
-                            </DialogTrigger>
-                            <GoogleSheetsExportInfo />
-                        </Dialog>
+                        <Button 
+                            onClick={handleExportToSheets} 
+                            disabled={!generatedReply || isGenerating || isExporting}
+                        >
+                            {isExporting ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <FileUp className="mr-2 h-4 w-4"/>
+                            )}
+                            Export to Sheets
+                        </Button>
                     </CardFooter>
                  </Card>
               )}
