@@ -33,12 +33,22 @@ import {
   Phone,
   FileText,
   MessageSquare,
+  Mail,
+  Calendar,
+  Globe,
 } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function Home() {
   const [message, setMessage] = useState(
@@ -55,6 +65,7 @@ export default function Home() {
     "Dear Ankush, Thank you for your message. Duly noted. Sudhanshu, is this still available as the dehydrated Fruits/Vegetables machine. Please provide the details to verify if it suits requirements of the new buyer. If it is available, please advise what is the best deal we can offer for Sudhanshu's reference. We look forward to hearing from you and a closing a further"
   );
   const [updatedBy, setUpdatedBy] = useState('Sudhanshu');
+  const [source, setSource] = useState('whatsapp');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -142,6 +153,7 @@ export default function Home() {
         ...extractedData,
         replyMessage: generatedReply,
         updatedBy: updatedBy,
+        source: source,
       };
       const result = await exportToSheets(exportData);
 
@@ -307,6 +319,24 @@ export default function Home() {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="source" className="flex items-center gap-2"><Globe className="h-4 w-4 text-muted-foreground" />Source</Label>
+                    <Select value={source} onValueChange={(value) => {
+                        setSource(value);
+                        setExportError(null);
+                    }}>
+                      <SelectTrigger id="source">
+                        <SelectValue placeholder="Select a source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                          <SelectItem value="phone">Phone</SelectItem>
+                          <SelectItem value="mail">Mail</SelectItem>
+                          <SelectItem value="events">Events</SelectItem>
+                          <SelectItem value="website">Website</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="query" className="flex items-center gap-2"><FileText className="h-4 w-4 text-muted-foreground" />Query</Label>
                     <Textarea
                       id="query"
@@ -443,4 +473,3 @@ export default function Home() {
     </main>
   );
 }
-

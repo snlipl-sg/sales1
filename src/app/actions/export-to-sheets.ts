@@ -6,12 +6,13 @@ import type { ExtractMessageDetailsOutput } from '@/ai/flows/extract-message-det
 interface ExportData extends ExtractMessageDetailsOutput {
   replyMessage: string;
   updatedBy: string;
+  source: string;
 }
 
 export async function exportToSheets(data: ExportData) {
   try {
     const client_email = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
-    const private_key = process.env.GOOGLE_SHEETS_PRIVATE_KEY;
+    const private_key = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
     const sheet_id = process.env.GOOGLE_SHEET_ID;
     const sheet_name = process.env.GOOGLE_SHEET_NAME;
 
@@ -34,6 +35,7 @@ export async function exportToSheets(data: ExportData) {
     const newRow = [
       new Date().toISOString(),
       data.updatedBy,
+      data.source,
       data.clientName,
       data.phoneNumber,
       data.query,
