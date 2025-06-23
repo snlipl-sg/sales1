@@ -33,10 +33,9 @@ import {
   Phone,
   FileText,
   MessageSquare,
-  Mail,
-  Calendar,
   Globe,
   Pencil,
+  Fingerprint,
 } from 'lucide-react';
 import {
   Popover,
@@ -51,12 +50,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+interface AppData extends ExtractMessageDetailsOutput {
+  id: string;
+}
+
 export default function Home() {
   const [message, setMessage] = useState(
     'Hi, this is John Doe from Acme Corp. My number is 555-123-4567. I\'d like to inquire about your pricing for the enterprise plan.'
   );
   const [extractedData, setExtractedData] =
-    useState<ExtractMessageDetailsOutput | null>({
+    useState<AppData | null>({
+      id: `rec_${Date.now()}`,
       clientName: 'John Doe',
       phoneNumber: '555-123-4567',
       query: 'Inquiry about pricing for the enterprise plan.',
@@ -93,7 +97,7 @@ export default function Home() {
     setShowIssue(false);
     try {
       const result = await extractMessageDetails({ message });
-      setExtractedData(result);
+      setExtractedData({ ...result, id: `rec_${Date.now()}` });
       toast({
         title: 'Success',
         description: 'Message details extracted successfully.',
@@ -195,7 +199,7 @@ export default function Home() {
   };
 
   const handleDataChange = (
-    field: keyof ExtractMessageDetailsOutput,
+    field: keyof Omit<AppData, 'id'>,
     value: string
   ) => {
     if (extractedData) {
@@ -295,7 +299,7 @@ export default function Home() {
           {!isExtracting && extractedData && (
             <>
               {/* Extracted Details Card */}
-              <Card className="shadow-lg animate-in fade-in duration-500">
+              <Card key={extractedData.id} className="shadow-lg animate-in fade-in duration-500">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Info className="text-primary" />
@@ -306,6 +310,15 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="recordId" className="flex items-center gap-2"><Fingerprint className="h-4 w-4 text-muted-foreground" />Record ID</Label>
+                    <Input
+                      id="recordId"
+                      value={extractedData.id}
+                      disabled
+                      className="text-muted-foreground"
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="clientName" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Client Name <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
                     <Popover open={!!exportError}>
