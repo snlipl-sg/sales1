@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -37,11 +36,6 @@ import {
   Pencil,
   Fingerprint,
 } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -321,24 +315,14 @@ export default function Home() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="clientName" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" />Client Name <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
-                    <Popover open={!!exportError}>
-                      <PopoverTrigger asChild>
-                        <Input
-                          id="clientName"
-                          value={extractedData.clientName}
-                          onChange={(e) =>
-                            handleDataChange('clientName', e.target.value)
-                          }
-                          placeholder="e.g., John Doe"
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent side="right" align="start" className="bg-destructive text-destructive-foreground border-none shadow-lg w-auto p-4">
-                        <div className="flex flex-col gap-1">
-                          <p className="font-semibold">Export Failed</p>
-                          <p className="text-sm text-destructive-foreground/90">{exportError}</p>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <Input
+                      id="clientName"
+                      value={extractedData.clientName}
+                      onChange={(e) =>
+                        handleDataChange('clientName', e.target.value)
+                      }
+                      placeholder="e.g., John Doe"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phoneNumber" className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" />Phone Number <Pencil className="h-3 w-3 text-muted-foreground/70" /></Label>
@@ -483,32 +467,30 @@ export default function Home() {
                         Your processed data will appear here.
                     </p>
                 </CardContent>
-            </Card>
+             </Card>
            )}
+
+          {showIssue && (
+            <Card className="shadow-lg border-destructive bg-destructive/10 animate-in fade-in duration-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive">
+                  <Info className="h-4 w-4" />
+                  Action Required
+                </CardTitle>
+                <CardDescription className="text-destructive/80">
+                  Please resolve the issue below.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-destructive/10 p-4 rounded-md text-destructive font-mono text-sm">
+                  {aiError && <p>{aiError}</p>}
+                  {exportError && <p>{exportError}</p>}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
-      {showIssue && (
-        <div className="fixed bottom-4 left-4 z-50">
-          <Popover open={showIssue} onOpenChange={setShowIssue}>
-            <PopoverTrigger asChild>
-              <button className="flex items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-lg animate-in fade-in-0 slide-in-from-bottom-10 duration-500 px-3 py-1.5 text-sm font-medium">
-                <div className="w-2 h-2 bg-white/80 rounded-full mr-2" />
-                <span>1 Issue</span>
-              </button>
-            </PopoverTrigger>
-            <PopoverContent side="top" align="start" className="w-auto p-2 mb-2">
-               <div className="flex justify-between items-center text-sm font-medium">
-                    <div>Issues</div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-destructive rounded-full" />
-                        <span>1</span>
-                    </div>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">{aiError || exportError || 'The AI failed to process your request.'}</p>
-          </PopoverContent>
-          </Popover>
-        </div>
-      )}
     </main>
   );
 }
