@@ -29,10 +29,14 @@ export async function exportToSheets(data: ExportData) {
       throw new Error('GOOGLE_SHEET_NAME is not configured.');
     }
 
+    // The private key from the .env file might have literal "\\n" instead of newlines.
+    // This reformats the key to ensure it is parsed correctly.
+    const formatted_private_key = private_key.replace(/\\n/g, '\n');
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email,
-        private_key,
+        private_key: formatted_private_key,
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
@@ -61,7 +65,13 @@ export async function exportToSheets(data: ExportData) {
     return { success: true, data: response.data };
   } catch (error) {
     console.error('Error exporting to Google Sheets:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    let errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    
+    // Check for the specific decoder error and provide a more helpful message.
+    if (errorMessage.includes('DECODER routines::unsupported')) {
+      errorMessage = 'The Google Sheets private key is not formatted correctly. Please ensure it is copied exactly as provided from your Google Cloud service account, including the "-----BEGIN PRIVATE KEY-----" and "-----END PRIVATE KEY-----" lines. The newlines (\\n) must be preserved.';
+    }
+
     return { success: false, error: `Failed to export to Google Sheets. ${errorMessage}` };
   }
 }
