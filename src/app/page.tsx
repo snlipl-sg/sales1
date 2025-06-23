@@ -198,9 +198,6 @@ export default function Home() {
     field: keyof ExtractMessageDetailsOutput,
     value: string
   ) => {
-    setExportError(null);
-    setAiError(null);
-    setShowIssue(false);
     if (extractedData) {
       setExtractedData({ ...extractedData, [field]: value });
     }
