@@ -180,11 +180,12 @@ export default function Home() {
           description: 'Data successfully exported to Google Sheets.',
         });
       } else {
-        throw new Error(result.error);
+        setExportError(result.error);
+        setShowIssue(true);
       }
     } catch (error) {
       console.error('Export failed:', error);
-      const message = error instanceof Error ? error.message : 'An unknown error occurred. Make sure your environment variables are set up correctly.';
+      const message = error instanceof Error ? error.message : 'An unknown error occurred.';
       setExportError(message);
       setShowIssue(true);
     } finally {

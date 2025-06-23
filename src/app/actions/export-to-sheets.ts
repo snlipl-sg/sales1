@@ -64,14 +64,18 @@ export async function exportToSheets(data: ExportData) {
 
     return { success: true, data: response.data };
   } catch (error) {
-    console.error('Error exporting to Google Sheets:', error);
-    let errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-    
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+
     // Check for the specific decoder error and provide a more helpful message.
     if (errorMessage.includes('DECODER routines::unsupported')) {
-      errorMessage = 'The Google Sheets private key is not formatted correctly. Please ensure it is copied exactly as provided from your Google Cloud service account, including the "-----BEGIN PRIVATE KEY-----" and "-----END PRIVATE KEY-----" lines. The newlines (\\n) must be preserved.';
+      return {
+        success: false,
+        error:
+          'The Google Sheets private key is not formatted correctly. Please ensure it is copied exactly as provided from your Google Cloud service account, including the "-----BEGIN PRIVATE KEY-----" and "-----END PRIVATE KEY-----" lines. The newlines (\\n) must be preserved.',
+      };
     }
 
+    console.error('Error exporting to Google Sheets:', error);
     return { success: false, error: `Failed to export to Google Sheets. ${errorMessage}` };
   }
 }
