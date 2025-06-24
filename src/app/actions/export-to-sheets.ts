@@ -66,6 +66,15 @@ export async function exportToSheets(data: ExportData) {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
 
+    // Check for invalid JWT signature error
+    if (errorMessage.toLowerCase().includes('invalid_grant')) {
+      return {
+        success: false,
+        error:
+          'Authentication with Google Sheets failed (Invalid JWT Signature). This usually means the Client Email or Private Key in your .env file is incorrect. Please double-check that you have copied them exactly from your Google Cloud service account and that the service account has "Editor" access to your sheet.',
+      };
+    }
+
     // Check for the specific decoder error and provide a more helpful message.
     if (errorMessage.includes('DECODER routines::unsupported')) {
       return {
