@@ -53,9 +53,12 @@ export async function exportToSheets(data: ExportData) {
       data.replyMessage,
     ];
 
+    // If the sheet name contains spaces, it must be wrapped in single quotes.
+    const range = `'${sheet_name}'!A1`;
+
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: sheet_id,
-      range: `${sheet_name}!A1`, // Appends after the last row in the sheet
+      range: range, // Appends after the last row in the sheet
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [newRow],
@@ -65,6 +68,15 @@ export async function exportToSheets(data: ExportData) {
     return { success: true, data: response.data };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    const sheet_name = process.env.GOOGLE_SHEET_NAME || '[Not Set]';
+
+    // Check for range parsing error
+    if (errorMessage.toLowerCase().includes('unable to parse range')) {
+      return {
+        success: false,
+        error: `Failed to export to Google Sheets. Could not find a sheet named "${sheet_name}". Please make sure the GOOGLE_SHEET_NAME in your .env file exactly matches the name of the tab in your spreadsheet (it is case-sensitive).`,
+      };
+    }
 
     // Check for invalid JWT signature error
     if (errorMessage.toLowerCase().includes('invalid_grant')) {
