@@ -19,7 +19,7 @@ export type ExtractMessageDetailsInput = z.infer<typeof ExtractMessageDetailsInp
 const ExtractMessageDetailsOutputSchema = z.object({
   clientName: z.string().describe('The name of the client, if available.'),
   phoneNumber: z.string().describe('The phone number of the client, if available.'),
-  query: z.string().describe('A brief summary of the client\'s query or request.'),
+  query: z.string().describe("A brief summary of the client's query or request."),
   messageDetails: z.string().describe('The full content of the message.'),
 });
 export type ExtractMessageDetailsOutput = z.infer<typeof ExtractMessageDetailsOutputSchema>;
@@ -32,17 +32,19 @@ const prompt = ai.definePrompt({
   name: 'extractMessageDetailsPrompt',
   input: {schema: ExtractMessageDetailsInputSchema},
   output: {schema: ExtractMessageDetailsOutputSchema},
-  prompt: `You are an expert at extracting information from messages.
+  prompt: `You are a highly capable AI assistant designed to extract structured information from unstructured text.
+Carefully analyze the following message and extract the required fields.
 
-  Analyze the following message and extract the client's name, phone number, their query, and the full message details.
-  - The phone number can be in various formats, such as (555) 123-4567, 555-123-4567, or +15551234567. Look for any sequence of numbers that resembles a phone number.
-  - If some information is not available, leave that field as an empty string.
-  - The "query" field should be a concise summary of the client's request.
-  - The "messageDetails" field should be the full, original message content.
-  
-  Message: {{{message}}}
-  
-  Output in JSON format.`,
+- clientName: Extract the full name of the person. If no name is mentioned, leave it as an empty string.
+- phoneNumber: Identify any phone number in the message. Sanitize it to a standard format if possible, but extract it as it appears if unsure. If no phone number is found, leave it as an empty string.
+- query: Provide a concise, one-sentence summary of the user's main question or request.
+- messageDetails: Return the complete, verbatim original message.
+
+Message to analyze:
+---
+{{{message}}}
+---
+`,
 });
 
 const extractMessageDetailsFlow = ai.defineFlow(
