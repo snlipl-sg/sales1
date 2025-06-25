@@ -36,6 +36,7 @@ import {
   Pencil,
   Fingerprint,
   RotateCcw,
+  Zap,
 } from 'lucide-react';
 import {
   Select,
@@ -70,6 +71,7 @@ export default function Home() {
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isProcessingAndExporting, setIsProcessingAndExporting] = useState(false);
   const [showIssue, setShowIssue] = useState(false);
   const { toast } = useToast();
   const [exportError, setExportError] = useState<string | null>(null);
@@ -194,6 +196,82 @@ export default function Home() {
     }
   };
 
+  const handleProcessAndExport = async () => {
+    if (!message.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please enter a message to process.',
+      });
+      return;
+    }
+
+    if (!updatedBy.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Information',
+        description:
+          'Please enter a name in the "Updated By" field to use this feature.',
+      });
+      return;
+    }
+
+    setIsProcessingAndExporting(true);
+    setExtractedData(null);
+    setGeneratedReply('');
+    setExportError(null);
+    setAiError(null);
+    setShowIssue(false);
+
+    try {
+      // Step 1: Extract Details
+      const extracted = await extractMessageDetails({ message });
+      const newExtractedData = { ...extracted, id: `rec_${Date.now()}` };
+      setExtractedData(newExtractedData);
+
+      // Step 2: Generate Reply
+      const reply = await generateReplyMessage({
+        clientName: newExtractedData.clientName || 'Valued Customer',
+        query: newExtractedData.query,
+      });
+      setGeneratedReply(reply.replyMessage);
+
+      // Step 3: Export to Sheets
+      const exportData = {
+        ...newExtractedData,
+        replyMessage: reply.replyMessage,
+        updatedBy: updatedBy,
+        source: source,
+      };
+      const result = await exportToSheets(exportData);
+
+      if (result.success) {
+        toast({
+          title: 'Success!',
+          description:
+            'Data was extracted, a reply generated, and everything was exported to Google Sheets.',
+        });
+      } else {
+        setExportError(result.error);
+        setShowIssue(true);
+      }
+    } catch (error) {
+      console.error('Automated process failed:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unknown error occurred.';
+      let displayMessage =
+        'An error occurred during the automated process. Please try again.';
+      if (errorMessage.toLowerCase().includes('api key')) {
+        displayMessage =
+          'Your Gemini API key is missing or invalid. Please check your .env configuration.';
+      }
+      setAiError(displayMessage);
+      setShowIssue(true);
+    } finally {
+      setIsProcessingAndExporting(false);
+    }
+  };
+
   const handleReset = () => {
     setMessage('');
     setExtractedData(null);
@@ -265,8 +343,11 @@ export default function Home() {
               className="resize-none"
             />
           </CardContent>
-          <CardFooter className="gap-2">
-            <Button onClick={handleExtract} disabled={isExtracting || !message}>
+          <CardFooter className="flex flex-wrap gap-2">
+            <Button
+              onClick={handleExtract}
+              disabled={isExtracting || isProcessingAndExporting || !message}
+            >
               {isExtracting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -274,7 +355,28 @@ export default function Home() {
               )}
               Process Message
             </Button>
-            <Button onClick={handleReset} variant="outline">
+            <Button
+              onClick={handleProcessAndExport}
+              disabled={
+                isProcessingAndExporting ||
+                isExtracting ||
+                !message ||
+                !updatedBy.trim()
+              }
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {isProcessingAndExporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Zap className="mr-2 h-4 w-4" />
+              )}
+              Process & Export
+            </Button>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              disabled={isProcessingAndExporting}
+            >
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
             </Button>
@@ -283,7 +385,7 @@ export default function Home() {
 
         {/* Output Column */}
         <div className="space-y-8">
-          {isExtracting && (
+          {(isExtracting || isProcessingAndExporting) && !extractedData && (
              <Card className="shadow-lg">
                 <CardHeader>
                     <Skeleton className="h-6 w-48" />
@@ -309,7 +411,7 @@ export default function Home() {
             </Card>
           )}
 
-          {!isExtracting && extractedData && (
+          {!isExtracting && !isProcessingAndExporting && extractedData && (
             <>
               {/* Extracted Details Card */}
               <Card key={extractedData.id} className="shadow-lg animate-in fade-in duration-500">
@@ -388,7 +490,10 @@ export default function Home() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleGenerateReply} disabled={isGenerating}>
+                  <Button
+                    onClick={handleGenerateReply}
+                    disabled={isGenerating || isProcessingAndExporting}
+                  >
                     {isGenerating ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -454,14 +559,22 @@ export default function Home() {
                         <Button
                             variant="outline"
                             onClick={() => copyToClipboard(generatedReply, 'Reply')}
-                            disabled={!generatedReply || isGenerating || isExporting}
+                            disabled={
+                                !generatedReply || isGenerating || isExporting || isProcessingAndExporting
+                            }
                         >
                             <Copy className="mr-2 h-4 w-4" />
                             Copy Reply
                         </Button>
                         <Button 
                             onClick={handleExportToSheets} 
-                            disabled={!generatedReply || isGenerating || isExporting || !updatedBy.trim()}
+                            disabled={
+                                !generatedReply ||
+                                isGenerating ||
+                                isExporting ||
+                                isProcessingAndExporting ||
+                                !updatedBy.trim()
+                            }
                         >
                             {isExporting ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -476,7 +589,7 @@ export default function Home() {
             </>
           )}
 
-           {!isExtracting && !extractedData && (
+           {!isExtracting && !isProcessingAndExporting && !extractedData && (
              <Card className="shadow-lg border-dashed">
                 <CardContent className="p-10 text-center">
                     <div className="mx-auto h-12 w-12 text-muted-foreground">
