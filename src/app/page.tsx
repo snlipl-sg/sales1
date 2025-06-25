@@ -35,6 +35,7 @@ import {
   Globe,
   Pencil,
   Fingerprint,
+  RotateCcw,
 } from 'lucide-react';
 import {
   Select,
@@ -193,6 +194,19 @@ export default function Home() {
     }
   };
 
+  const handleReset = () => {
+    setMessage('');
+    setExtractedData(null);
+    setGeneratedReply('');
+    setExportError(null);
+    setAiError(null);
+    setShowIssue(false);
+    toast({
+      title: 'Form Reset',
+      description: 'All input and generated data have been cleared.',
+    });
+  };
+
   const handleDataChange = (
     field: keyof Omit<AppData, 'id'>,
     value: string
@@ -251,7 +265,7 @@ export default function Home() {
               className="resize-none"
             />
           </CardContent>
-          <CardFooter>
+          <CardFooter className="gap-2">
             <Button onClick={handleExtract} disabled={isExtracting || !message}>
               {isExtracting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -259,6 +273,10 @@ export default function Home() {
                 <Sparkles className="mr-2 h-4 w-4" />
               )}
               Process Message
+            </Button>
+            <Button onClick={handleReset} variant="outline">
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Reset
             </Button>
           </CardFooter>
         </Card>
