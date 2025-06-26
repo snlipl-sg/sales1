@@ -37,6 +37,7 @@ import {
   Fingerprint,
   RotateCcw,
   Zap,
+  Mail,
 } from 'lucide-react';
 import {
   Select,
@@ -555,7 +556,7 @@ export default function Home() {
                             </>
                         )}
                     </CardContent>
-                    <CardFooter className="justify-between">
+                    <CardFooter className="flex flex-wrap gap-2">
                         <Button
                             variant="outline"
                             onClick={() => copyToClipboard(generatedReply, 'Reply')}
@@ -565,6 +566,27 @@ export default function Home() {
                         >
                             <Copy className="mr-2 h-4 w-4" />
                             Copy Reply
+                        </Button>
+                        <Button
+                          asChild
+                          variant="outline"
+                          disabled={
+                            !generatedReply ||
+                            isGenerating ||
+                            isExporting ||
+                            isProcessingAndExporting
+                          }
+                        >
+                          <a
+                            href={`mailto:sudhanshu@innofarms.co.in?subject=${encodeURIComponent(
+                              `Re: Inquiry from ${
+                                extractedData?.clientName || 'Valued Customer'
+                              }`
+                            )}&body=${encodeURIComponent(generatedReply)}`}
+                          >
+                            <Mail className="mr-2 h-4 w-4" />
+                            Email Draft
+                          </a>
                         </Button>
                         <Button 
                             onClick={handleExportToSheets} 
