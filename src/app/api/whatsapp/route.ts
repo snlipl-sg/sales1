@@ -8,23 +8,13 @@ import { sendWhatsAppMessage } from '@/services/whatsapp';
 import Twilio from 'twilio';
 
 /**
- * This is the webhook endpoint for receiving messages from WhatsApp (via Twilio).
+ * This function handles the long-running AI and Sheets operations in the background,
+ * allowing the main webhook to respond to Twilio immediately.
+ * @param message The incoming message text from the user.
+ * @param from The user's WhatsApp number.
  */
-export async function POST(request: NextRequest) {
+async function processMessageInBackground(message: string, from: string) {
   try {
-    const body = await request.formData();
-    const message = body.get('Body')?.toString();
-    const from = body.get('From')?.toString(); // e.g., 'whatsapp:+14155238886'
-    const to = body.get('To')?.toString(); // e.g., 'whatsapp:+1...'
-
-    if (!message || !from || !to) {
-      return NextResponse.json(
-        { error: 'Invalid webhook payload. Missing Body, From, or To.' },
-        { status: 400 }
-      );
-    }
-
-    // Since this is an automated process, we'll use a standard name for the updater.
     const updatedBy = 'WhatsApp Bot';
     const source = 'whatsapp';
 
@@ -47,9 +37,34 @@ export async function POST(request: NextRequest) {
       updatedBy: updatedBy,
       source: source,
     });
+  } catch (error) {
+    console.error('Error during background processing of WhatsApp message:', error);
+    // In a production app, you might add more robust error handling here,
+    // like sending a notification to an admin.
+  }
+}
 
-    // Twilio expects a TwiML response or an empty 200/204 to acknowledge receipt.
-    // Since we're sending the reply asynchronously via the API, we send back an empty response.
+/**
+ * This is the webhook endpoint for receiving messages from WhatsApp (via Twilio).
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.formData();
+    const message = body.get('Body')?.toString();
+    const from = body.get('From')?.toString(); // e.g., 'whatsapp:+14155238886'
+
+    if (!message || !from) {
+      return NextResponse.json(
+        { error: 'Invalid webhook payload. Missing Body or From.' },
+        { status: 400 }
+      );
+    }
+
+    // "Fire and forget" the background processing. We don't use `await` here
+    // so we can respond to Twilio immediately. The function will run on its own.
+    processMessageInBackground(message, from);
+
+    // Acknowledge receipt to Twilio right away with an empty TwiML response.
     const twiml = new Twilio.twiml.MessagingResponse();
     return new NextResponse(twiml.toString(), {
       status: 200,
