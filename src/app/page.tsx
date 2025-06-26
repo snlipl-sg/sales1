@@ -578,14 +578,16 @@ export default function Home() {
                           }
                         >
                           <a
-                            href={`mailto:sudhanshu@innofarms.co.in?subject=${encodeURIComponent(
+                            href={`https://mail.google.com/mail/?view=cm&fs=1&to=sudhanshu@innofarms.co.in&su=${encodeURIComponent(
                               `Re: Inquiry from ${
                                 extractedData?.clientName || 'Valued Customer'
                               }`
                             )}&body=${encodeURIComponent(generatedReply)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                           >
                             <Mail className="mr-2 h-4 w-4" />
-                            Email Draft
+                            Draft in Gmail
                           </a>
                         </Button>
                         <Button 
