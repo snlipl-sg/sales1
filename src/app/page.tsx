@@ -68,7 +68,7 @@ export default function Home() {
     'Hi John, thanks for reaching out about our enterprise plan. Could you please share a bit more about your team size and specific needs so I can provide the most accurate pricing information? Looking forward to hearing from you.'
   );
   const [updatedBy, setUpdatedBy] = useState('Sudhanshu');
-  const [source, setSource] = useState('whatsapp');
+  const [source, setSource] = useState('phone');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -327,7 +327,7 @@ export default function Home() {
               1. Input Message
             </CardTitle>
             <CardDescription>
-              Copy and paste the message from WhatsApp, Email, or any other source.
+              Copy and paste the message from any source, or connect to WhatsApp for automation.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -469,9 +469,8 @@ export default function Home() {
                         <SelectValue placeholder="Select a source" />
                       </SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                          <SelectItem value="phone">Phone</SelectItem>
-                          <SelectItem value="mail">Mail</SelectItem>
+                          <SelectItem value="phone">Phone Call</SelectItem>
+                          <SelectItem value="mail">Email</SelectItem>
                           <SelectItem value="events">Events</SelectItem>
                           <SelectItem value="website">Website</SelectItem>
                       </SelectContent>
