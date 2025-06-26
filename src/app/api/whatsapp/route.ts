@@ -63,8 +63,19 @@ async function processMessageInBackground(message: string, from: string) {
  * browser to confirm that your webhook URL is publicly accessible.
  */
 export async function GET(request: NextRequest) {
-  return NextResponse.json({
-    message: 'Webhook is active. Use POST for incoming messages from Twilio.',
+  const instructions = `
+    Webhook is running!
+    However, this preview URL may not be publicly accessible to Twilio.
+
+    For reliable testing during development, please use ngrok to expose this port.
+    1. Install ngrok (if you haven't): open a new terminal and run -> npm install -g ngrok
+    2. Run in a new terminal: ngrok http 9002
+    3. Copy the public https://... URL provided by ngrok.
+    4. Paste that ngrok URL into the Twilio console webhook field, adding /api/whatsapp at the end.
+  `;
+  return new Response(instructions.trim(), {
+    status: 200,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });
 }
 
