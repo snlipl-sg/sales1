@@ -59,6 +59,16 @@ async function processMessageInBackground(message: string, from: string) {
 }
 
 /**
+ * This is a simple GET handler for debugging. You can visit this URL in your
+ * browser to confirm that your webhook URL is publicly accessible.
+ */
+export async function GET(request: NextRequest) {
+  return NextResponse.json({
+    message: 'Webhook is active. Use POST for incoming messages from Twilio.',
+  });
+}
+
+/**
  * This is the webhook endpoint for receiving messages from WhatsApp (via Twilio).
  */
 export async function POST(request: NextRequest) {
