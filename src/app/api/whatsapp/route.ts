@@ -41,12 +41,17 @@ async function processMessageInBackground(message: string, from: string) {
 
     console.log('Background Process Step 4: Exporting to Sheets...');
     // 4. Log the entire interaction to Google Sheets.
-    await exportToSheets({
+    const exportResult = await exportToSheets({
       ...extractedData,
       replyMessage: replyMessage,
       updatedBy: updatedBy,
       source: source,
     });
+
+    // If the export fails, throw an error to be caught and logged.
+    if (!exportResult.success) {
+      throw new Error(`Google Sheets export failed: ${exportResult.error}`);
+    }
     console.log('Background Process Step 4 Complete: Exported to Sheets.');
     console.log('Background Process Finished Successfully.');
   } catch (error) {

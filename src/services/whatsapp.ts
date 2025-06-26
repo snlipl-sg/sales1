@@ -44,6 +44,7 @@ export async function sendWhatsAppMessage(
   } catch (error) {
     console.error(`Failed to send WhatsApp message to ${to}:`, error);
     // Re-throw a more user-friendly error to the calling function.
-    throw new Error('Failed to send WhatsApp message via Twilio.');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to send WhatsApp message via Twilio: ${errorMessage}`);
   }
 }
