@@ -24,7 +24,7 @@ name: Deploy to Firebase App Hosting
 
 on:
   push:
-    branches: ["main"] # This will trigger the deployment on every push to the main branch
+    branches: ["master"] # This will trigger the deployment on every push to the master branch
 
 jobs:
   build_and_deploy:
